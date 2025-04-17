@@ -3,7 +3,6 @@ module github.com/kcp-dev/embeddedetcd
 go 1.23.0
 
 require (
-	github.com/kcp-dev/kcp/sdk v0.0.0-00010101000000-000000000000
 	github.com/spf13/pflag v1.0.6
 	go.etcd.io/etcd/client/pkg/v3 v3.5.14
 	go.etcd.io/etcd/server/v3 v3.5.13
