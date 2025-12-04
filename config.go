@@ -33,7 +33,7 @@ import (
 
 	"go.etcd.io/etcd/client/pkg/v3/fileutil"
 	"go.etcd.io/etcd/server/v3/embed"
-	"go.etcd.io/etcd/server/v3/wal"
+	"go.etcd.io/etcd/server/v3/storage/wal"
 	"go.uber.org/zap"
 
 	"github.com/kcp-dev/embeddedetcd/options"
