@@ -103,6 +103,12 @@ func NewConfig(o options.CompletedOptions, enableWatchCache bool) (*Config, erro
 
 	if enableUnsafeEtcdDisableFsyncHack, _ := strconv.ParseBool(os.Getenv("UNSAFE_E2E_HACK_DISABLE_ETCD_FSYNC")); enableUnsafeEtcdDisableFsyncHack {
 		cfg.UnsafeNoFsync = true
+		// Minimize WAL and snapshots for in-memory/testing scenarios
+		cfg.MaxWalFiles = 1
+		cfg.MaxSnapFiles = 1
+		if o.WalSizeBytes == 0 {
+			wal.SegmentSizeBytes = 1 << 20 // 1MB instead of default 64MB
+		}
 	}
 
 	if o.QuotaBackendBytes > 0 {
