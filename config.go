@@ -189,17 +189,17 @@ func generateClientAndServerCerts(hosts []string, dir string) error {
 		BasicConstraintsValid: true,
 	}
 
-	caKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	caKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return err
 	}
 
-	serverKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	serverKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return err
 	}
 
-	clientKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	clientKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return err
 	}
