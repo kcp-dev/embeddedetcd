@@ -19,6 +19,7 @@ package embeddedetcd
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"go.etcd.io/etcd/server/v3/embed"
@@ -28,6 +29,9 @@ import (
 
 type Server struct {
 	config CompletedConfig
+
+	lock    sync.RWMutex
+	stopped bool
 }
 
 func NewServer(config CompletedConfig) *Server {
@@ -51,6 +55,9 @@ func (s *Server) Run(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
 		e.Close()
+		s.lock.Lock()
+		defer s.lock.Unlock()
+		s.stopped = true
 	}()
 
 	select {
@@ -62,4 +69,11 @@ func (s *Server) Run(ctx context.Context) error {
 	case e := <-e.Err():
 		return e
 	}
+}
+
+// Stopped returns true when the embedded etcd own shutdown routine has finished.
+func (s *Server) Stopped() bool {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.stopped
 }
