@@ -24,11 +24,13 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"math/big"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 
 	"go.etcd.io/etcd/client/pkg/v3/fileutil"
@@ -43,9 +45,27 @@ type Config struct {
 	*embed.Config
 }
 
+var (
+	walSegmentLock sync.Mutex
+	walSegmentSet  bool
+)
+
+func setWalSegmentSize(size int64) error {
+	walSegmentLock.Lock()
+	defer walSegmentLock.Unlock()
+	if walSegmentSet {
+		return fmt.Errorf("wal segment size already set to %d, cannot set to %d", wal.SegmentSizeBytes, size)
+	}
+	wal.SegmentSizeBytes = size
+	walSegmentSet = true
+	return nil
+}
+
 func NewConfig(o options.CompletedOptions, enableWatchCache bool) (*Config, error) {
 	if o.WalSizeBytes != 0 {
-		wal.SegmentSizeBytes = o.WalSizeBytes
+		if err := setWalSegmentSize(o.WalSizeBytes); err != nil {
+			return nil, err
+		}
 	}
 
 	cfg := embed.NewConfig()
@@ -107,7 +127,9 @@ func NewConfig(o options.CompletedOptions, enableWatchCache bool) (*Config, erro
 		cfg.MaxWalFiles = 1
 		cfg.MaxSnapFiles = 1
 		if o.WalSizeBytes == 0 {
-			wal.SegmentSizeBytes = 1 << 20 // 1MB instead of default 64MB
+			if err := setWalSegmentSize(1 << 20); err != nil { // 1MB instead of default 64MB
+				return nil, err
+			}
 		}
 	}
 

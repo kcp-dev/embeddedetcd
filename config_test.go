@@ -29,21 +29,21 @@ func TestUnsafeE2EHackDisableEtcdFsync(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tests := []struct {
-		name                    string
-		envValue                string
-		walSizeBytesOption      int64
-		expectUnsafeNoFsync     bool
-		expectMaxWalFiles       uint
-		expectMaxSnapFiles      uint
-		expectWalSegmentSize    int64
+		name                 string
+		envValue             string
+		walSizeBytesOption   int64
+		expectUnsafeNoFsync  bool
+		expectMaxWalFiles    uint
+		expectMaxSnapFiles   uint
+		expectWalSegmentSize int64
 	}{
 		{
 			name:                 "env var not set",
 			envValue:             "",
 			walSizeBytesOption:   0,
 			expectUnsafeNoFsync:  false,
-			expectMaxWalFiles:    5, // etcd default
-			expectMaxSnapFiles:   5, // etcd default
+			expectMaxWalFiles:    5,                // etcd default
+			expectMaxSnapFiles:   5,                // etcd default
 			expectWalSegmentSize: 64 * 1024 * 1024, // 64MB default
 		},
 		{
@@ -116,5 +116,25 @@ func TestUnsafeE2EHackDisableEtcdFsync(t *testing.T) {
 				t.Errorf("wal.SegmentSizeBytes: got %v, want %v", wal.SegmentSizeBytes, tt.expectWalSegmentSize)
 			}
 		})
+	}
+}
+
+func TestNewConfigRejectsSecondWalSegmentSize(t *testing.T) {
+	dir1 := t.TempDir()
+	opts1 := options.NewOptions(dir1)
+	opts1.WalSizeBytes = 1 << 20
+	_, err := NewConfig(opts1.Complete(nil), false)
+	if err != nil {
+		// The first one failing doesn't matter. It's just to ensure
+		// that wal.SegmentSizeBytes was set once.
+		t.Logf("first NewConfig failed: %v", err)
+	}
+
+	dir2 := t.TempDir()
+	opts2 := options.NewOptions(dir2)
+	opts2.WalSizeBytes = 2 << 20
+	_, err = NewConfig(opts2.Complete(nil), false)
+	if err == nil {
+		t.Fatal("expected error from second NewConfig with different WalSizeBytes")
 	}
 }
