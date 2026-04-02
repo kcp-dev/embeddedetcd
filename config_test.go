@@ -87,6 +87,7 @@ func TestUnsafeE2EHackDisableEtcdFsync(t *testing.T) {
 
 			// Reset WAL segment size to default before each test
 			wal.SegmentSizeBytes = 64 * 1024 * 1024
+			walSegmentSet = false
 
 			// Create options
 			opts := options.NewOptions(tmpDir)
@@ -122,7 +123,7 @@ func TestUnsafeE2EHackDisableEtcdFsync(t *testing.T) {
 func TestNewConfigRejectsSecondWalSegmentSize(t *testing.T) {
 	dir1 := t.TempDir()
 	opts1 := options.NewOptions(dir1)
-	opts1.WalSizeBytes = 1 << 20
+	opts1.WalSizeBytes = 2 << 20
 	_, err := NewConfig(opts1.Complete(nil), false)
 	if err != nil {
 		// The first one failing doesn't matter. It's just to ensure
@@ -132,7 +133,7 @@ func TestNewConfigRejectsSecondWalSegmentSize(t *testing.T) {
 
 	dir2 := t.TempDir()
 	opts2 := options.NewOptions(dir2)
-	opts2.WalSizeBytes = 2 << 20
+	opts2.WalSizeBytes = 3 << 20
 	_, err = NewConfig(opts2.Complete(nil), false)
 	if err == nil {
 		t.Fatal("expected error from second NewConfig with different WalSizeBytes")
