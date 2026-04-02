@@ -53,6 +53,10 @@ var (
 func setWalSegmentSize(size int64) error {
 	walSegmentLock.Lock()
 	defer walSegmentLock.Unlock()
+	// Allow multiple embeddedetcd to set the same size.
+	if walSegmentSet && wal.SegmentSizeBytes == size {
+		return nil
+	}
 	if walSegmentSet {
 		return fmt.Errorf("wal segment size already set to %d, cannot set to %d", wal.SegmentSizeBytes, size)
 	}
