@@ -17,6 +17,7 @@ limitations under the License.
 package options
 
 import (
+	"crypto/elliptic"
 	"fmt"
 	"path/filepath"
 
@@ -36,6 +37,7 @@ type Options struct {
 	WalSizeBytes      int64
 	QuotaBackendBytes int64
 	ForceNewCluster   bool
+	ECDSACurve        ECDSACurve
 }
 
 func NewOptions(rootDir string) *Options {
@@ -43,6 +45,7 @@ func NewOptions(rootDir string) *Options {
 		Directory:  filepath.Join(rootDir, "etcd-server"),
 		PeerPort:   "2380",
 		ClientPort: "2379",
+		ECDSACurve: ECDSACurve{Curve: elliptic.P384()},
 	}
 }
 
@@ -54,6 +57,7 @@ func (e *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.Int64Var(&e.WalSizeBytes, "embedded-etcd-wal-size-bytes", e.WalSizeBytes, "Size of embedded etcd WAL")
 	fs.Int64Var(&e.QuotaBackendBytes, "embedded-etcd-quota-backend-bytes", e.WalSizeBytes, "Alarm threshold for embedded etcd backend bytes")
 	fs.BoolVar(&e.ForceNewCluster, "embedded-etcd-force-new-cluster", e.ForceNewCluster, "Starts a new cluster from existing data restored from a different system")
+	fs.Var(&e.ECDSACurve, "embedded-etcd-ecdsa-curve", "ECDSA curve for TLS key generation. Supported values: P-224, P-256, P-384, P-521")
 }
 
 type completedOptions struct {

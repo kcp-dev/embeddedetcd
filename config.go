@@ -90,7 +90,7 @@ func NewConfig(o options.CompletedOptions, enableWatchCache bool) (*Config, erro
 		return nil, err
 	}
 
-	if err := generateClientAndServerCerts([]string{"localhost"}, filepath.Join(cfg.Dir, "secrets")); err != nil {
+	if err := generateClientAndServerCerts([]string{"localhost"}, filepath.Join(cfg.Dir, "secrets"), o.ECDSACurve.Curve); err != nil {
 		return nil, err
 	}
 	cfg.PeerTLSInfo.ServerName = "localhost"
@@ -162,7 +162,8 @@ func (c *Config) Complete() CompletedConfig {
 	}}
 }
 
-func generateClientAndServerCerts(hosts []string, dir string) error {
+func generateClientAndServerCerts(hosts []string, dir string, curve elliptic.Curve) error {
+
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
@@ -215,17 +216,17 @@ func generateClientAndServerCerts(hosts []string, dir string) error {
 		BasicConstraintsValid: true,
 	}
 
-	caKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	caKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		return err
 	}
 
-	serverKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	serverKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		return err
 	}
 
-	clientKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	clientKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		return err
 	}
@@ -277,3 +278,4 @@ func ecPrivateKeyToFile(key *ecdsa.PrivateKey, path string) error {
 	}
 	return os.WriteFile(path, buf.Bytes(), 0600)
 }
+
