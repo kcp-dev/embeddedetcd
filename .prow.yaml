@@ -1,0 +1,18 @@
+presubmits:
+  - name: pull-embeddedetcd-verify
+    always_run: true
+    decorate: true
+    clone_uri: "https://github.com/kcp-dev/embeddedetcd"
+    labels:
+      preset-goproxy: "true"
+    spec:
+      containers:
+        - image: ghcr.io/kcp-dev/infra/build:1.26.7-1
+          command:
+            - sh
+            - -c
+            - go vet ./... && go build ./...
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 1
