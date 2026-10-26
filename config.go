@@ -114,7 +114,7 @@ func NewConfig(o options.CompletedOptions, enableWatchCache bool) (*Config, erro
 		// - in practice this value never changes so we are not exposing it as a flag/option
 		// - we enable it only when the watch cache is on otherwise it might not scale
 		//   sending an event every 5s to thousands of clients
-		cfg.ExperimentalWatchProgressNotifyInterval = 5 * time.Second
+		cfg.WatchProgressNotifyInterval = 5 * time.Second
 	}
 
 	for _, s := range o.ListenMetricsURLs {
